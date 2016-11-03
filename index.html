@@ -108,31 +108,31 @@
                     });
                     $('#codeLeft').attr("readonly", "true");
                 }
+                $(".saveInstance").on('click', function() {
+                    FORK_THIS_API.Account.authorization = FORK_THIS_API.getUrlVars().authorization;
+                    FORK_THIS_API.Account.read(function(response) {
+                        if (response.account) {
+                            var newSession = {
+                                    sessionId: session.sessionId + "-saved" + Math.floor(Math.random() * 100000).toString(16),
+                                    description: session.description,
+                                    code: $("#codeRight").val(),
+                                    ownerId: response.account.userId,
+                                    sessionType: "private"
+                                };
+                            response.account.saved = response.account.saved || [];
+                            response.account.saved.push(newSession.sessionId);
+                            FORK_THIS_API.Session.add(newSession, function() {
+                              FORK_THIS_API.Account.update(response.account,function(){
+                                window.location.href = "main.html?session=" + newSession.sessionId;
+                              });
+                            });
+                        }
+                    });
+                });
             });
             if (!FORK_THIS_API.getUrlVars().authorization) {
                 $(".saveInstance").addClass("disabled");
             }
-            $(".saveInstance").on('click', function() {
-                FORK_THIS_API.Account.authorization = FORK_THIS_API.getUrlVars().authorization;
-                FORK_THIS_API.Account.read(function(response) {
-                    if (response.account) {
-                        var newSession = {
-                                sessionId: session.sessionId + "-saved" + Math.floor(Math.random() * 100000).toString(16),
-                                description: session.description,
-                                code: $("#codeRight").val(),
-                                ownerId: response.account.userId,
-                                sessionType: "private"
-                            };
-                        response.account.saved = response.account.saved || [];
-                        response.account.saved.push(newSession.sessionId);
-                        FORK_THIS_API.Session.add(newSession, function() {
-                          FORK_THIS_API.Account.update(response.account,function(){
-                            window.location.href = "main.html?session=" + newSession.sessionId;
-                          });
-                        });
-                    }
-                });
-            });
         }
     </script>
 </body>
