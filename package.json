@@ -1,15 +1,17 @@
 {
-  "name": "socket-chat-example",
+  "name": "forkThisSessions",
+  "description": "Serving static content via html files",
   "version": "0.0.1",
-  "description": "my first socket.io app",
+  "author": "John Pallag",
 
   "license": "MIT",
 
   "main": "server.js",
+  "dependencies": {
+    "express": "3.x",
+    "socket.io": "x"
+  },
   "engines": {
   	"node": "0.10.x"
-  },
-"scripts": {
-  "start": "node server.js"
-}
+  }
 }
