@@ -1,0 +1,41 @@
+textarea{
+	font-size: 2.5vh;
+}
+#page-wrapper{
+	margin: 0 !important;
+}
+.workspace .codingArea, .console{
+	position: relative;
+	float: left;
+	width: 100%;
+	overflow-y: auto;
+}
+.workspace .codingArea{
+	height: 250px;
+	border: 1px solid #545454;
+	padding: 10px;
+	font-family: 'Courier New';
+}
+.workspace .console{
+	height: 150px;
+	background-color: black;
+	color: white;
+	border: 1px solid #545454;
+	padding: 10px;
+}
+.workspace .buttonPanel{
+	width: 100%;
+	float: left;
+	margin: 10px 0;
+}
+/* Phone in portrait */
+@media(max-width:760px) {
+	.workspace{
+		width: 100%;
+	}
+	.controlPanel{
+		height: auto;
+		width: 100%;
+		padding: 2vh;
+	}
+}
