@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Fork This Session</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+	  #code{width:100vw;height:100vh;resize: none;position:absolute;left:0;top:0;padding:16px;font-size:16px;font-family:'Courier-New'}
+    </style>
+  </head>
+  <body>
+	<textarea id="code"></textarea>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+	<script src="http://beta.forkthis.info/js/api.js"></script>
+    <script>
+        var defaultCode = 'function main(){\nconsole.log("Hello World!");\n}';
+        if (FORK_THIS_API.getUrlVars().session) {
+            FORK_THIS_API.Session.read(FORK_THIS_API.getUrlVars().session, function(session) {
+                $('#code').val(session.code || defaultCode);
+				  var socket = io();
+				  $('#code').on('keyup',function(e){
+				    if(FORK_THIS_API.getUrlVars().isOwner){
+						if(e.which === 13){
+							session.code = $("#code").val();
+							FORK_THIS_API.Session.update(session);
+						}
+						socket.emit('sessionUpdate', JSON.stringify({session:FORK_THIS_API.getUrlVars().session,msg:$('#code').val()}));
+						return false;
+					}
+				  });
+				  socket.on(FORK_THIS_API.getUrlVars().session + "-updated", function(msg){
+					$('#code').val(msg);
+				  });
+			});
+		}
+    </script>
+  </body>
+</html>
