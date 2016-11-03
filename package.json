@@ -1,15 +1,19 @@
 {
-  "name": "socket-chat-example",
-  "version": "0.0.1",
-  "description": "my first socket.io app",
-
-  "license": "MIT",
-
-  "main": "server.js",
+  "name": "websockets-socket.io",
+  "version": "1.0.0",
   "engines": {
-  	"node": "0.10.x"
+    "node": "6.2.0"
   },
-"scripts": {
-  "start": "node server.js"
-}
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "4.13.4",
+    "socket.io": "1.4.6"
+  }
 }
