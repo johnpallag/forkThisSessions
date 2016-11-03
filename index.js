@@ -10,7 +10,6 @@ io.on('connection', function(socket){
   socket.on('sessionUpdate', function(json){
 	  var body = JSON.parse(json);
 	  var msg = body.msg;
-	  console.log(body);
     io.emit(body.session + "-updated", msg);
   });
 });
