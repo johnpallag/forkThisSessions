@@ -103,11 +103,11 @@
                         return false;
                     });
                 } else {
-                  $('#codeLeft').attr("readonly","true");
+                    socket.on(FORK_THIS_API.getUrlVars().session + "-updated", function(msg) {
+                        $('#codeLeft').val(msg);
+                    });
+                    $('#codeLeft').attr("readonly", "true");
                 }
-                socket.on(FORK_THIS_API.getUrlVars().session + "-updated", function(msg) {
-                    $('#codeLeft').val(msg);
-                });
             });
             if (!FORK_THIS_API.Account.currentUser) {
                 $(".saveInstance").addClass("disabled");
