@@ -109,11 +109,11 @@
                     $('#codeLeft').attr("readonly", "true");
                 }
             });
-            if (!FORK_THIS_API.Ajax.getUrlVars().authorization) {
+            if (!FORK_THIS_API.getUrlVars().authorization) {
                 $(".saveInstance").addClass("disabled");
             }
             $(".saveInstance").on('click', function() {
-                FORK_THIS_API.Account.authorization = FORK_THIS_API.Ajax.getUrlVars().authorization;
+                FORK_THIS_API.Account.authorization = FORK_THIS_API.getUrlVars().authorization;
                 FORK_THIS_API.Account.read(function(response) {
                     if (response.account) {
                         var newSession = {
