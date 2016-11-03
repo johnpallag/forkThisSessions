@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const socketIO = require('socket.io');
 const path = require('path');
@@ -16,5 +17,10 @@ io.on('connection', function(socket){
 	  var body = JSON.parse(json);
 	  var msg = body.msg;
     io.emit(body.session + "-updated", msg);
+  });
+  socket.on('sessionChat',function(json){
+	  var body = JSON.parse(json);
+	  var msg = body.msg;
+    io.emit(body.session + "-newChat", msg);
   });
 });
