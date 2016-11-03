@@ -1,39 +1,134 @@
-<!doctype html>
 <html>
-  <head>
-    <title>Fork This Session</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-	  #code{width:100vw;height:100vh;resize: none;position:absolute;left:0;top:0;padding:16px;font-size:16px;font-family:'Courier-New'}
-    </style>
-  </head>
-  <body>
-	<textarea id="code"></textarea>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>forkThis!</title>
+    <link href="fork.png" rel="shortcut icon">
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
-	<script src="http://beta.forkthis.info/js/api.js"></script>
+    <link href="//beta.forkthis.info/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//beta.forkthis.info/dist/css/sb-admin-2.css" rel="stylesheet">
+    <script src="//beta.forkthis.info/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="//beta.forkthis.info/dist/js/sb-admin-2.js"></script>
+    <script src="//beta.forkthis.info/js/api.js"></script>
+    <link href="//beta.forkthis.info/css/style.css" rel="stylesheet" />
+    <script src="//beta.forkthis.info/js/index.js"></script>
+    <link href="//beta.forkthis.info/fork.png" rel="icon" />
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header"></h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-code" aria-hidden="true"></i> Code
+                        </div>
+                        <div class="panel-body">
+                            <div class="workspace workspace-Left">
+                                <textarea class="codingArea" id="codeLeft"></textarea>
+                                <div class="buttonPanel">
+                                    <button class="run btn btn btn-primary">Run</button>
+                                    <button class="clearConsole btn btn btn-secondary">Clear</button>
+                                    <button class="stop btn btn btn-danger">Terminate</button>
+                                </div>
+                                <div class="console" readonly=true></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-tasks" aria-hidden="true"></i> Control Panel
+                        </div>
+                        <div class="panel-body">
+                            <div class="controlPanel">
+                                <button class="makeInstance btn btn-primary">Make Instance</button>
+                                <button class="mergeInstance btn btn-secondary" style="display:none;">Merge Instance</button>
+                                <button class="saveInstance btn btn-success" style="display:none;">Save Instance</button>
+                                <button class="deleteInstance btn btn-danger" style="display:none;margin-top: 10px;">Delete Instance</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-code-fork" aria-hidden="true"></i> Instance
+                        </div>
+                        <div class="panel-body">
+                            <div class="workspace workspace-right" style="display:none;">
+                                <textarea class="codingArea" id="codeRight"></textarea>
+                                <div class="buttonPanel">
+                                    <button class="run btn btn btn-primary">Run</button>
+                                    <button class="clearConsole btn btn btn-secondary">Clear</button>
+                                    <button class="stop btn btn btn-danger">Terminate</button>
+                                </div>
+                                <div class="console" readonly=true></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
         var defaultCode = 'function main(){\nconsole.log("Hello World!");\n}';
         if (FORK_THIS_API.getUrlVars().session) {
             FORK_THIS_API.Session.read(FORK_THIS_API.getUrlVars().session, function(session) {
-                $('#code').val(session.code || defaultCode);
-				  var socket = io();
-				  $('#code').on('keyup',function(e){
-				    if(FORK_THIS_API.getUrlVars().isOwner){
-						if(e.which === 13){
-							session.code = $("#code").val();
-							FORK_THIS_API.Session.update(session);
-						}
-						socket.emit('sessionUpdate', JSON.stringify({session:FORK_THIS_API.getUrlVars().session,msg:$('#code').val()}));
-						return false;
-					}
-				  });
-				  socket.on(FORK_THIS_API.getUrlVars().session + "-updated", function(msg){
-					$('#code').val(msg);
-				  });
-			});
-		}
+                $('#codeLeft').val(session.code || defaultCode);
+                var socket = io();
+                if (FORK_THIS_API.getUrlVars().isOwner) {
+                    $('#codeLeft').on('keyup', function(e) {
+                        if (e.which === 13) {
+                            session.code = $("#codeLeft").val();
+                            FORK_THIS_API.Session.update(session);
+                        }
+                        socket.emit('sessionUpdate', JSON.stringify({
+                            session: FORK_THIS_API.getUrlVars().session,
+                            msg: $('#codeLeft').val()
+                        }));
+                        return false;
+                    });
+                } else {
+                  $('#codeLeft').attr("readonly","true");
+                }
+                socket.on(FORK_THIS_API.getUrlVars().session + "-updated", function(msg) {
+                    $('#codeLeft').val(msg);
+                });
+            });
+            if (!FORK_THIS_API.Account.currentUser) {
+                $(".saveInstance").addClass("disabled");
+            }
+            $(".saveInstance").on('click', function() {
+                if (FORK_THIS_API.Account.currentUser) {
+                    var newSession = {
+                            sessionId: session.sessionId + "-saved" + Math.floor(Math.random() * 100000).toString(16),
+                            description: session.description,
+                            code: $("#codeRight").val(),
+                            ownerId: FORK_THIS_API.Account.currentUser.userId,
+                            sessionType: "private"
+                        },
+                        saved = [];
+                    FORK_THIS_API.Session.add(newSession, function() {
+                        window.location.href = "main.html?session=" + newSession.sessionId;
+                    });
+                }
+            });
+        }
     </script>
-  </body>
+</body>
+
 </html>
