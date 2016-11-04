@@ -88,6 +88,9 @@
         var defaultCode = 'function main(){\nconsole.log("Hello World!");\n}';
         if (FORK_THIS_API.getUrlVars().session) {
             FORK_THIS_API.Session.read(FORK_THIS_API.getUrlVars().session, function(session) {
+                session.views = session.views || 0;
+                session.views++;
+                FORK_THIS_API.Session.update(session,function(){});
                 $('#codeLeft').val(session.code || defaultCode);
                 var socket = io();
                 if (FORK_THIS_API.getUrlVars().isOwner) {
@@ -119,6 +122,9 @@
                                     ownerId: response.account.userId,
                                     sessionType: "private"
                                 };
+                            session.forks = session.forks || 0;
+                            session.forks++;
+                            FORK_THIS_API.Session.update(session,function(){});
                             response.account.saved = response.account.saved || [];
                             response.account.saved.push(newSession.sessionId);
                             FORK_THIS_API.Session.add(newSession, function() {
