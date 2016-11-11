@@ -1,0 +1,159 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>forkThis!</title>
+    <link href="fork.png" rel="shortcut icon">
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="js/jquery.js"></script>
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="dist/css/sb-admin-2.css" rel="stylesheet">
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/session.js"></script>
+    <script src="js/page.js"></script>
+    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" />
+    <link href="http://beta.forkthis.info/fork.png" rel="icon" />
+    <script src="http://codemirror.net/lib/codemirror.js"></script>
+    <link href="http://codemirror.net/lib/codemirror.css" rel="stylesheet" />
+    <link href="http://codemirror.net/lib/codemirror.css" rel="stylesheet" />
+    <script src="http://codemirror.net/mode/javascript/javascript.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jshint/r07/jshint.js"></script>
+    <style type="text/css">
+        .CodeMirror {
+            border: 1px solid #aaa;
+        }
+
+        .lint-error {
+            font-family: arial;
+            font-size: 70%;
+            background: #ffa;
+            color: #a00;
+            padding: 2px 5px 3px;
+        }
+
+        .lint-error-icon {
+            color: white;
+            background-color: red;
+            font-weight: bold;
+            border-radius: 50%;
+            padding: 0 3px;
+            margin-right: 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="loadingMessage">Loading...</div>
+        <div id="page-wrapper" style="visiblity:hidden">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="page-header"></h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-code" aria-hidden="true"></i> <span id="fileName">Code</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="workspace workspace-Left">
+                                <div id="codeLeft"></div>
+                                <div class="buttonPanel">
+                                    <button class="run btn btn btn-primary">Run</button>
+                                    <button class="clearConsole btn btn btn-secondary">Clear Console</button>
+                                    <button class="stop btn btn btn-danger" style="display:none;">Terminate</button>
+                                    <button class="editable btn btn btn-success">Make Editable</button>
+                                </div>
+                                <div class="console" readonly=true></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-tasks" aria-hidden="true"></i> Control Panel
+                        </div>
+                        <div class="panel-body">
+                            <div class="controlPanel">
+                                <div class="form-group">
+                                    <button class="makeInstance btn btn-primary">Make Instance</button>
+                                    <button class="mergeInstance btn btn-secondary" style="display:none;">Merge Instance</button>
+                                    <button class="deleteInstance btn btn-danger" style="display:none;">Delete Instance</button>
+                                </div>
+                                <div class="form-group" style="display:none;" id="saveInstanceContainer">
+                                    <div class="input-group">
+                                        <input class="form-control" id="saveSessionName" placeholder="New Session Name" />
+                                        <span class="input-group-btn">
+                                            <button class="saveInstance btn btn-success">Save Instance</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-folder-open-o" aria-hidden="true"></i> Files
+                        </div>
+                        <div class="panel-body" id="files">
+                            <div class="buttonPanel" style="margin-top:16px;" id="addFileContainer">
+                                <div class="input-group">
+                                    <input class="form-control" id="addFileName" placeholder="index2.js" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-success" id="addFileButton">Add File</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-comments" aria-hidden="true"></i> Messages
+                        </div>
+                        <div class="panel-body" chatMessages="files">
+                            <div id="chatMessages"></div>
+                            <div class="buttonPanel" style="margin-top:16px;">
+                                <div class="input-group">
+                                    <input class="form-control" id="messageInput" placeholder="Message" />
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-success" id="sendMessage">Send</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-code-fork" aria-hidden="true"></i> Instance
+                        </div>
+                        <div class="panel-body">
+                            <div class="workspace workspace-right">
+                                <div id="codeRight"></div>
+                                <div class="buttonPanel">
+                                    <button class="run btn btn btn-primary">Run</button>
+                                    <button class="clearConsole btn btn btn-secondary">Clear Console</button>
+                                    <button class="stop btn btn btn-danger" style="display:none;">Terminate</button>
+                                </div>
+                                <div class="console" readonly=true></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -7,20 +7,17 @@ const PORT = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
 
 const server = express()
-  .use((req, res) => res.sendFile(INDEX) )
+  .use(express.static(__dirname + '/static'))
   .listen(PORT, () => console.log('Listening on ${ PORT }'));
 
 const io = socketIO(server);
 
 io.on('connection', function(socket){
-  socket.on('sessionUpdate', function(json){
-	  var body = JSON.parse(json);
-	  var msg = body.msg;
-    io.emit(body.session + "-updated", msg);
-  });
-  socket.on('sessionChat',function(json){
-	  var body = JSON.parse(json);
-	  var msg = body.msg;
-    io.emit(body.session + "-newChat", msg);
+  socket.on('event', function(json){
+	  var evt = JSON.parse(json);
+    var session = evt.session;
+	  var evtType = evt.type;
+    var body = evt.body;
+    io.emit(evt.session, json);
   });
 });

@@ -39,3 +39,18 @@ textarea{
 		padding: 2vh;
 	}
 }
+a.remove{
+	float: right;
+	color: black;
+}
+#chatMessages{
+	height: 100px;
+	overflow-y: scroll;
+}
+#loadingMessage{
+	width: 100%;
+height: 100%;
+text-align: center;
+line-height: 100vh;
+font-size: 50px;
+}
