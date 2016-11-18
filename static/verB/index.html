@@ -8,17 +8,17 @@
     <meta name="author" content="">
 
     <title>forkThis!</title>
-    <link href="fork.png" rel="shortcut icon">
+    <link href="../fork.png" rel="shortcut icon">
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="js/jquery.js"></script>
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="dist/css/sb-admin-2.css" rel="stylesheet">
-    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/session.js"></script>
-    <script src="js/page.js"></script>
-    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="css/style.css" rel="stylesheet" />
+    <script src="../js/jquery.js"></script>
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
+    <script src="../vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/session.js"></script>
+    <script src="../js/page.js"></script>
+    <link href="../vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="../css/style.css" rel="stylesheet" />
     <link href="http://beta.forkthis.info/fork.png" rel="icon" />
     <script src="http://codemirror.net/lib/codemirror.js"></script>
     <link href="http://codemirror.net/lib/codemirror.css" rel="stylesheet" />
@@ -26,15 +26,21 @@
     <script src="http://codemirror.net/mode/javascript/javascript.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jshint/r07/jshint.js"></script>
     <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+        (function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-  ga('create', 'UA-87350188-1', 'auto');
-  ga('send', 'pageview');
-
-</script>
+        ga('create', 'UA-87350188-1', 'auto');
+        ga('send', 'pageview');
+    </script>
     <style type="text/css">
         .CodeMirror {
             border: 1px solid #aaa;
@@ -69,7 +75,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-5">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <i class="fa fa-code" aria-hidden="true"></i> <span id="fileName">Code</span>
@@ -88,7 +94,25 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3">
+                <div class="col-lg-5" id="instancePanel" style="display:none;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <i class="fa fa-code-fork" aria-hidden="true"></i> Instance
+                        </div>
+                        <div class="panel-body">
+                            <div class="workspace workspace-right">
+                                <div id="codeRight"></div>
+                                <div class="buttonPanel">
+                                    <button class="run btn btn btn-primary">Run</button>
+                                    <button class="clearConsole btn btn btn-secondary">Clear Console</button>
+                                    <button class="stop btn btn btn-danger" style="display:none;">Terminate</button>
+                                </div>
+                                <div class="console" readonly=true></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <i class="fa fa-tasks" aria-hidden="true"></i> Control Panel
@@ -97,16 +121,22 @@
                             <div class="controlPanel">
                                 <div class="form-group">
                                     <button class="makeInstance btn btn-primary">Make Instance</button>
-                                    <button class="mergeInstance btn btn-secondary" style="display:none;">Merge Instance</button>
-                                    <button class="deleteInstance btn btn-danger" style="display:none;">Delete Instance</button>
+                                    <button class="mergeInstance btn btn-secondary" style="display:none;margin-top:10px">Merge Instance</button>
+                                    <button class="deleteInstance btn btn-danger" style="display:none;margin-top:10px">Delete Instance</button>
                                 </div>
+                                <script>
+                                    $(".makeInstance").on('click', function() {
+                                        $("#instancePanel").show();
+                                        rightEditor.refresh();
+                                    });
+                                    $(".deleteInstance").on('click', function() {
+                                        $("#instancePanel").hide();
+                                        rightEditor.refresh();
+                                    });
+                                </script>
                                 <div class="form-group" style="display:none;" id="saveInstanceContainer">
-                                    <div class="input-group">
-                                        <input class="form-control" id="saveSessionName" placeholder="New Session Name" />
-                                        <span class="input-group-btn">
-                                            <button class="saveInstance btn btn-success">Save Instance</button>
-                                        </span>
-                                    </div>
+                                    <input class="form-control" id="saveSessionName" placeholder="New Session Name" />
+                                        <button class="saveInstance btn btn-success" style="margin-top:10px;">Save Instance</button>
                                 </div>
                             </div>
                         </div>
@@ -140,24 +170,6 @@
                                         <button class="btn btn-success" id="sendMessage">Send</button>
                                     </span>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <i class="fa fa-code-fork" aria-hidden="true"></i> Instance
-                        </div>
-                        <div class="panel-body">
-                            <div class="workspace workspace-right">
-                                <div id="codeRight"></div>
-                                <div class="buttonPanel">
-                                    <button class="run btn btn btn-primary">Run</button>
-                                    <button class="clearConsole btn btn btn-secondary">Clear Console</button>
-                                    <button class="stop btn btn btn-danger" style="display:none;">Terminate</button>
-                                </div>
-                                <div class="console" readonly=true></div>
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 /*global
-FORK_THIS_API, $, JSHINT, document, window, CodeMirror, io, Session
+FORK_THIS_API, $, JSHINT, document, window, CodeMirror, io, Session, alert, ga
 */
 
 var PRIVATE_FUNCTIONS;
@@ -7,6 +7,13 @@ var leftEditor, rightEditor;
 var projectCode = {};
 var openFile = "";
 var s = {};
+
+function report(type, val){
+  'use strict';
+  if(window.ga){
+    ga('send',	'event',	type,	val);
+  }
+}
 
 (function() {
     'use strict';
@@ -52,6 +59,7 @@ var s = {};
         leftEditor = new CodeMirror(document.getElementById("codeLeft"), {
             lineNumbers: true,
             mode: "javascript",
+            lineWrapping: true,
             value: 'function HelloWorld(){\n\tconsole.log("Hello World!");\n}'
         });
         leftEditor.on("change", function() {
@@ -66,6 +74,7 @@ var s = {};
         rightEditor = new CodeMirror(document.getElementById("codeRight"), {
             lineNumbers: true,
             mode: "javascript",
+            lineWrapping: true,
             value: 'function HelloWorld(){\n\tconsole.log("Hello World!");\n}'
         });
         rightEditor.on("change", function() {
@@ -94,14 +103,18 @@ var s = {};
                     $("#fileName").text(session.openFile);
                     /* Draw Files */
                     start = '<div><a class="file"><i class="fa fa-file-code-o" aria-hidden="true"></i> ';
-                    end = '</a><a class="remove">x</a></div>';
+                    if (FORK_THIS_API.getUrlVars().userId === s.ownerId || s.editable || s.ownerId === "guest") {
+                        end = '</a><a class="remove">x</a></div>';
+                    } else {
+                        end = "</a></div>";
+                    }
                     $("#files").prepend(start + session.files.join(end + start) + end);
                 },
                 onFileAdd: function(session) {
                     $("#files").html('<div class="buttonPanel" style="margin-top:16px;" id="addFileContainer"> <div class="input-group"> <input class="form-control" id="addFileName" placeholder="index2.js" /> <span class="input-group-btn"> <button class="btn btn-success" id="addFileButton">Add File</button> </span> </div> </div>');
                     var start, end;
                     start = '<div><a class="file"><i class="fa fa-file-code-o" aria-hidden="true"></i> ';
-                    if (FORK_THIS_API.getUrlVars().isOwner || s.editable) {
+                    if (FORK_THIS_API.getUrlVars().userId === s.ownerId || s.editable || s.ownerId === "guest") {
                         end = '</a><a class="remove">x</a></div>';
                     } else {
                         end = '</a></div>';
@@ -112,7 +125,7 @@ var s = {};
                     $("#files").html('<div class="buttonPanel" style="margin-top:16px;" id="addFileContainer"> <div class="input-group"> <input class="form-control" id="addFileName" placeholder="index2.js" /> <span class="input-group-btn"> <button class="btn btn-success" id="addFileButton">Add File</button> </span> </div> </div>');
                     var start, end;
                     start = '<div><a class="file"><i class="fa fa-file-code-o" aria-hidden="true"></i> ';
-                    if (FORK_THIS_API.getUrlVars().isOwner || s.editable) {
+                    if (FORK_THIS_API.getUrlVars().userId === s.ownerId || s.editable || s.ownerId === "guest") {
                         end = '</a><a class="remove">x</a></div>';
                     } else {
                         end = '</a></div>';
@@ -123,9 +136,12 @@ var s = {};
                     if (session.editable) {
                         $(".uneditable").remove();
                     } else {
-                        if (!FORK_THIS_API.getUrlVars().isOwner && !s.editable) {
+                        if (FORK_THIS_API.getUrlVars().userId !== s.ownerId && !s.editable && s.ownerId !== "guest") {
                             $("#codeLeft .CodeMirror-sizer").prepend('<div class="uneditable" style="position: absolute;min-height: 300px;top: 0;width: 100%;height: 100%;left:0;z-index: 1000;background-color:rgba(0,0,0,.1)"></div>');
                             $("#messageInput").focus();
+                            $(".uneditable").on('click',function(){
+                              report('uneditable','click');
+                            });
                         }
                     }
                 },
@@ -154,7 +170,7 @@ var s = {};
             FORK_THIS_API.Session.read(FORK_THIS_API.getUrlVars().session, function(session) {
                 FORK_THIS_API.Session.incViews(session);
                 $('#codeLeft').on('keyup', function(e) {
-                    if (FORK_THIS_API.getUrlVars().isOwner || s.editable) {
+                    if (FORK_THIS_API.getUrlVars().userId === s.ownerId || s.editable || s.ownerId === "guest") {
                         if (e.which === 13 || e.which === 59 || e.which === 125 || e.which === 41) {
                             session.code = leftEditor.getValue();
                             s.updateFile(leftEditor.getValue());
@@ -162,14 +178,27 @@ var s = {};
                         s.codeChanged(leftEditor.getValue());
                     }
                 });
-                if (!FORK_THIS_API.getUrlVars().isOwner && !s.editable) {
+                if (FORK_THIS_API.getUrlVars().userId !== s.ownerId && !s.editable && s.ownerId !== "guest") {
                     $("#codeLeft .CodeMirror-sizer").prepend('<div class="uneditable" style="position: absolute;background-color:rgba(0,0,0,.1);min-height: 300px;top: 0;width: 100%;height: 100%;left:0;z-index: 1000;"></div>');
-                    $(".editable").hide();
                     $("#addFileContainer").hide();
+                    $(".uneditable").on('click',function(){
+                      report('uneditable','click');
+                    });
+                    $(".remove").hide();
+                    $(".editable").hide();
+                }
+                if (FORK_THIS_API.getUrlVars().userId === s.ownerId){
+                    $(".editable").show();
+                    $(".uneditable").hide();
+                    $("#addFileContainer").show();
+                } else if(s.ownerId === "guest") {
+                    $(".editable").hide();
+                    $(".uneditable").hide();
+                    $("#addFileContainer").show();
                 }
                 $(".saveInstance").on('click', function() {
                     FORK_THIS_API.Account.read(function(response) {
-                        if (response.account && $("#saveSessionName").val() !== "") {
+                        if (response.account && $("#saveSessionName").val().split(' ').join('') !== "") {
                             if (s) {
                                 s.save(rightEditor.getValue(), $("#saveSessionName").val(), response.account.userId, function(oldSession, newSession) {
                                     FORK_THIS_API.Account.addSaved(response.account, newSession.sessionId, oldSession.sessionId, function() {
@@ -178,6 +207,8 @@ var s = {};
                                     });
                                 });
                             }
+                        } else {
+                            alert("Please provide a session name");
                         }
                     });
                 });
@@ -193,14 +224,24 @@ var s = {};
                     }
                 });
                 $("#addFileButton").on('click', function() {
-                    s.addFile($("#addFileName").val().split('.')[0], "", $("#addFileName").val().split('.')[1]);
+                    if ($("#addFileName").val().split(' ').join('') === "") {
+                        alert("Please give a file name");
+                    } else if ($("#addFileName").val().indexOf(".js") < 0) {
+                        alert("Only .js files are supported right now");
+                    } else {
+                        s.addFile($("#addFileName").val().split('.')[0], "", $("#addFileName").val().split('.')[1]);
+                    }
                 });
                 $("#sendMessage").on('click', function() {
-                    s.sendChat($("#messageInput").val(), FORK_THIS_API.Account.currentUser || {
-                        firstName: "Guest",
-                        lastName: ''
-                    });
-                    $("#messageInput").val('');
+                    if ($("#messageInput").val().split(' ').join('') !== "") {
+                        s.sendChat($("#messageInput").val(), FORK_THIS_API.Account.currentUser || {
+                            firstName: "Guest",
+                            lastName: ''
+                        });
+                        $("#messageInput").val('');
+                    } else {
+                        alert("No message");
+                    }
                 });
                 $(".editable").on('click', function() {
                     s.toggleEditable();
@@ -209,6 +250,14 @@ var s = {};
                     } else {
                         $(this).text("Make Editable");
                     }
+                });
+                $("#openMessage").on('click', function() {
+                    $(".messageWindow").show();
+                    $("#openMessage").hide();
+                });
+                $("#closeMessage").on('click', function() {
+                    $(".messageWindow").hide();
+                    $("#openMessage").show();
                 });
             });
             if (!FORK_THIS_API.getUrlVars().authorization) {
@@ -293,7 +342,9 @@ var s = {};
             rightEditor.setValue(s.code || leftEditor.getValue());
             $(mergeInstanceButton).show();
             $(deleteInstanceButton).show();
-            $("#saveInstanceContainer").show();
+            if(FORK_THIS_API.getUrlVars().userId){
+              $("#saveInstanceContainer").show();
+            }
             $(makeInstanceButton).hide();
             $(workspaceRight).find(".console").val("");
         });
