@@ -49,16 +49,16 @@ function Session(sessionId, options) {
                 case 'file.add':
                     self.files.push(evt.body.fileName);
                     self.project[evt.body.fileName] = evt.body.body;
-                    tryFunction(self.options.onFileAdd,evt.body);
+                    tryFunction(self.options.onFileAdd, evt.body);
                     break;
                 case 'file.update':
                     self.project[evt.body.fileName] = evt.body.body;
-                    tryFunction(self.options.onFileUpdate,evt.body);
+                    tryFunction(self.options.onFileUpdate, evt.body);
                     break;
                 case 'file.remove':
                     self.files.splice(self.files.indexOf(evt.body.fileName), 1);
                     self.project[evt.body.fileName] = null;
-                    tryFunction(self.options.onFileRemove,evt.body);
+                    tryFunction(self.options.onFileRemove, evt.body);
                     break;
             }
         });
@@ -66,29 +66,32 @@ function Session(sessionId, options) {
 
     /* Public Functions */
     this.sendChat = function(message, user) {
-        broadcast('chat', {message:message,user:user});
+        broadcast('chat', {
+            message: message,
+            user: user
+        });
     };
     this.toggleEditable = function() {
         self.editable = !self.editable;
         broadcast('editable', self.editable);
     };
-    this.codeChanged = function(code){
-      self.project[self.openFile] = code;
-      var file;
-      self.code = "";
-      for(file in self.project){
-        if(self.project.hasOwnProperty(file)){
-          self.code += self.project[file];
+    this.codeChanged = function(code) {
+        self.project[self.openFile] = code;
+        var file;
+        self.code = "";
+        for (file in self.project) {
+            if (self.project.hasOwnProperty(file)) {
+                self.code += self.project[file];
+            }
         }
-      }
-      broadcast('file.update', {
-        fileName: self.openFile,
-        body: code
-      });
+        broadcast('file.update', {
+            fileName: self.openFile,
+            body: code
+        });
     };
     this.readFile = function(fileName) {
-          self.openFile = fileName;
-          return self.project[fileName];
+        self.openFile = fileName;
+        return self.project[fileName];
     };
     this.removeFile = function(fileName, extension) {
         FORK_THIS_API.File.remove({
@@ -166,17 +169,24 @@ function Session(sessionId, options) {
                         listen();
                     }
                 };
-                for (i = 1; i < response.files.Contents.length; i++) {
-                    filename = response.files.Contents[i].Key.split('/')[1];
-                    self.files.push(filename);
-                    if (i === 1) {
-                        self.openFile = filename;
+                if (response.files.Contents.length <= 0) {
+                    tryFunction(self.options.onload, self);
+                    listen();
+                } else {
+                    for (i = 0; i < response.files.Contents.length; i++) {
+                        filename = response.files.Contents[i].Key.split('/')[1];
+                        if (filename && filename.split(' ').join('') !== "") {
+                            self.files.push(filename);
+                            if (i === 1) {
+                                self.openFile = filename;
+                            }
+                            ext = filename.split('.')[filename.split('.').length - 1];
+                            FORK_THIS_API.File.read(FORK_THIS_API.getUrlVars().session, {
+                                name: filename.replace('.' + ext, ''),
+                                extension: ext
+                            }, fileRead);
+                        }
                     }
-                    ext = filename.split('.')[filename.split('.').length - 1];
-                    FORK_THIS_API.File.read(FORK_THIS_API.getUrlVars().session, {
-                        name: filename.replace('.' + ext, ''),
-                        extension: ext
-                    }, fileRead);
                 }
             } else {
                 self.project["index.js"] = responseSession.code;
@@ -186,6 +196,9 @@ function Session(sessionId, options) {
                 tryFunction(self.options.onload, self);
                 listen();
             }
+        }, function() {
+            tryFunction(self.options.onload, self);
+            listen();
         });
     });
 }
